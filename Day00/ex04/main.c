@@ -6,8 +6,8 @@ int main()
 	SET_BIT(DDRB, D2); // set the bit 1 in Data Direction Register B to 1 (OUTPUT)
 	SET_BIT(DDRB, D3); // set the bit 2 in Data Direction Register B to 1 (OUTPUT)
 	SET_BIT(DDRB, D4); // set the bit 4 in Data Direction Register B to 1 (OUTPUT)
-	CLR_BIT(DDRD, SW1); // set the bit 2 in Data Direction Register D to 0 (OUTPUT)
-	CLR_BIT(DDRD, SW2); // set the bit 4 in Data Direction Register D to 0 (OUTPUT)
+	CLR_BIT(DDRD, SW1); // set the bit 2 in Data Direction Register D to 0 (INPUT)
+	CLR_BIT(DDRD, SW2); // set the bit 4 in Data Direction Register D to 0 (INPUT)
 	while (1)
 	{
 		if (!CHK_BIT(PIND, SW1)) // check if the bit 2 in Port Input Register is 0
