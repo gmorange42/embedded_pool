@@ -2,13 +2,13 @@
 
 int main(void)
 {
-	DDRB |= (1<<1); // set DDRB1 to OUTPUT
+	DDRB |= (1<<PB1); // set DDRB1 to OUTPUT
 	
 	// Set Comparison Value
-	OCR1A = F_CPU / 1024 / 10;
+	OCR1A = F_CPU / 256 / 10;
 
 	// Set the Input Capture Unit 
-	ICR1 = F_CPU / 1024;
+	ICR1 = F_CPU / 256;
 
 	// Set Timer top to mode 14
 	TCCR1A |= (1<<WGM11);
@@ -16,7 +16,6 @@ int main(void)
 	TCCR1B |= (1<<WGM13);
 
 	// Set Clock parameter
-	TCCR1B |= (1<<CS10); 
 	TCCR1B |= (1<<CS12); 
 
 	// Set Timer output

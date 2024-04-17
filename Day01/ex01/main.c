@@ -2,12 +2,12 @@
 
 int main(void)
 {
-	DDRB |= (1<<1); // set DDRB1 to OUTPUT
+	DDRB |= (1<<PB1); // set DDRB1 to OUTPUT
 	
 	// Set Comparison Value
 	OCR1A = F_CPU / 1024 / 2;
 
-	// Set Timer top to mode 15
+	// Set Timer Top to mode 15
 	TCCR1A |= (1<<WGM10);
 	TCCR1A |= (1<<WGM11);
 	TCCR1B |= (1<<WGM12);

@@ -1,11 +1,15 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
+#define SET_BITS(reg, mask) (reg |= mask);
+#define CLR_BITS(reg, mask) (reg &= ~mask);
+#define CHK_BITS(reg, mask) ((reg & mask) == mask)
+
 int main(void)
 {
 	uint8_t ratio = 1;
-	DDRB |= (1<<1); // set DDRB1 to OUTPUT
-	DDRD &= ~0b00010100; // set DDRD1 and DDRD4 to INPUT
+	SET_BITS(DDRB, (1<<1)); // set DDRB1 to OUTPUT
+	CLR_BITS(DDRD, (1<<2) | (1<<4)); // set DDRD1 and DDRD4 to INPUT
 	
 	// Set Comparison Value
 	OCR1A = F_CPU / 256 / 10;
@@ -14,33 +18,33 @@ int main(void)
 	ICR1 = F_CPU / 256;
 
 	// Set Timer top to mode 14
-	TCCR1A |= (1<<WGM11);
-	TCCR1B |= (1<<WGM12);
-	TCCR1B |= (1<<WGM13);
+	SET_BITS(TCCR1A, (1<<WGM11));
+	SET_BITS(TCCR1B, (1<<WGM12) | (1<<WGM13));
 
 	// Set Clock parameter
-	TCCR1B |= (1<<CS12); 
+	SET_BITS(TCCR1B, (1<<CS12)); 
 
 	// Set Timer output
-	TCCR1A |= (1<<COM1A1);
+	SET_BITS(TCCR1A, (1<<COM1A1));
+
 	while (1)
 	{
-		if (!(PIND & (1<<2)) && ratio < 10)
+		if ((!CHK_BITS(PIND, (1<<2))) && ratio < 10) // If SW1 is pressed and ratio < 10
 		{
-			OCR1A = (ICR1 / 10) * (++ratio);
+			OCR1A = (ICR1 / 10) * (++ratio); // Update of the Comparison Value
 			_delay_ms(50);
-			while (!(PIND & (1<<2)))
+			while (!CHK_BITS(PIND, (1<<2))) // While SW1 is pressed
 			{
-				_delay_ms(50);
+				_delay_ms(50); // Wait
 			}
 		}
-		else if (!(PIND & (1<<4)) && ratio > 1)
+		else if ((!CHK_BITS(PIND, (1<<4))) && ratio > 1)// If SW2 is pressed and ratio > 0
 		{
-			OCR1A = (ICR1 / 10) * (--ratio);
+			OCR1A = (ICR1 / 10) * (--ratio); // Update of the Comparison Value
 			_delay_ms(50);
-			while (!(PIND & (1<<4)))
+			while (!CHK_BITS(PIND, (1<<4))) // While SW1 is pressed
 			{
-				_delay_ms(50);
+				_delay_ms(50); // Wait
 			}
 		}
 	}
