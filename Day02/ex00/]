@@ -1,0 +1,45 @@
+#include <avr/io.h>
+#include <util/delay.h>
+#include <avr/interrupt.h>
+
+#define SET_BITS(reg, mask) (reg |= mask);
+#define CLR_BITS(reg, mask) (reg &= ~mask);
+#define SWI_BITS(reg, mask) (reg ^= mask);
+#define CHK_BITS(reg, mask) ((reg & mask) == mask)
+
+volatile uint8_t test = 0;
+
+ISR(INT0_vect){
+	test = 1;
+}
+
+int main(void)
+{
+	SET_BITS(DDRB, (1<<PB0)); // Set DDRB bit 0 to 1 (OUTPUT)
+//	CLR_BITS(DDRD, (1<<PD2)); // Set DDRD bit 2 to 0 (INPUT)
+
+	SET_BITS(SREG, (1<<7)); // Set bit 7 in Status Register to 1 to emable Global Interrupt
+	SET_BITS(EICRA, (1<<ISC01)); // Set the Interrupt Sence Controle to Falling
+	SET_BITS(EIMSK, (1<<INT0)); // External Interrupt Request 0 Enable
+
+	while (1)
+	{
+		if (test)
+		{
+			SWI_BITS(PORTB, (1<<PB0));
+			_delay_ms(50);
+			test = 0;
+		}
+//		if (!CHK_BITS(EIFR, (1<<INTF0)))
+//		{
+////			SWI_BITS(PORTB, (1<<PB0));
+//			_delay_ms(50);
+//			while (!CHK_BITS(EIFR, (1<<INTF0)))
+//			{
+//				_delay_ms(50);
+//			}
+//		}
+	}
+
+	return (0);
+}
