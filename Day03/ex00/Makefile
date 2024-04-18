@@ -1,31 +1,29 @@
 NAME=main.hex
 MCU=atmega328p
 F_CPU=16000000
-BAUD=115200
+UART_BAUDRATE=115200
 SRC=main.c
 CC=avr-gcc
 OBJCOPY=avr-objcopy
 OBJS=$(SRC:.c=.bin)
-CFLAGS=-std=c99 -O1 -g -mmcu=$(MCU) -DF_CPU=$(F_CPU) -I.
+CFLAGS=-std=c99 -O1 -g -mmcu=$(MCU) -DF_CPU=$(F_CPU) -DUART_BAUDRATE=$(UART_BAUDRATE) -I.
 PORT=/dev/ttyUSB0
 
-FLASH := .flash
-
-all: $(FLASH)
+all: hex flash
 	
 $(NAME): $(OBJS)
-	$(OBJCOPY) -O ihex $^ $@
+	$(OBJCOPY) -O ihex $(OBJS) $(NAME)
 
 %.bin: %.c
 	$(CC) $(CFLAGS) -o $(OBJS) $(SRC)
 
 hex: $(NAME)
 
-$(FLASH): $(NAME)
+flash:
 	avrdude -p $(MCU) -c arduino -U flash:w:$(OBJS) -P $(PORT)
-	@touch $@
 
 clean:
-	rm -f $(NAME) $(FLASH) *.bin
+	rm $(OBJS)
+	rm $(NAME)
 
-.PHONY: hex flash clean
+.PHONY: hex flash clean $(NAME)
