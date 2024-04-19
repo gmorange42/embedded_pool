@@ -10,12 +10,12 @@ void uart_init(void)
 	UCSR0B = (1<<TXEN0); // Transmitter Enable
 }
 
-void uart_tx(void)
+void uart_tx(char c)
 {
 	while (!(UCSR0A & (1<<UDRE0))) // While Data Register is not empty
 	{
 	}
-	UDR0 = 'z'; // Fill the data register with 'z'
+	UDR0 = c; // Fill the data register with c
 }
 
 int main(void)
@@ -24,7 +24,7 @@ int main(void)
 
 	while (1)
 	{
-		uart_tx();
+		uart_tx('Z');
 		_delay_ms(1000); // 1 Hz
 	}
 	return (0);

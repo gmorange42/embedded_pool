@@ -9,6 +9,21 @@
 
 #define UBRR_VALUE  (uint16_t)((float)((F_CPU / 16.0 / UART_BAUDRATE) + 0.5) - 1)
 
+void uart_tx(char);
+
+ISR(USART_RX_vect)
+{
+	uint8_t c = UDR0;
+	if ((c >= 'a' && c <= 'z') || c >= 'A' && c <= 'Z') // If the char is a letter
+	{
+		uart_tx(SWI_BITS(c, (1<<5))); // Switch the case
+	}
+	else
+	{
+		uart_tx(c);
+	}
+}
+
 void uart_init(void)
 {
 	UBRR0H = (unsigned char)(UBRR_VALUE>>8); // Set Usart Baud Rate Register High
@@ -22,19 +37,6 @@ void uart_tx(char c)
 	{
 	}
 	UDR0 = c; // Fill the Data Register with c
-}
-
-ISR(USART_RX_vect)
-{
-	uint8_t c = UDR0;
-	if ((c >= 'a' && c <= 'z') || c >= 'A' && c <= 'Z') // If the char is a letter
-	{
-		uart_tx(SWI_BITS(c, (1<<5))); // Switch the case
-	}
-	else
-	{
-		uart_tx(c);
-	}
 }
 
 int main(void)

@@ -45,11 +45,11 @@ void set_timer1(void)
 	// Set Status Register to Global Interrupt Enable
 	SET_BITS(SREG, (1<<7));
 
+	
 	// TIMER1
 
 	// Set the Input Capture Unit (represent the top of Timer1 in Mode 14) 
 	ICR1 = F_CPU / 1024 * 2;
-
 
 	// Set top to mode 14
 	SET_BITS(TCCR1A, (1<<WGM11));
