@@ -1,4 +1,5 @@
 #include "main.h"
+#include <stdlib.h>
 
 #define UBRR_VALUE  (uint16_t)((float)((F_CPU / 16.0 / UART_BAUDRATE) + 0.5) - 1)
 
@@ -82,7 +83,7 @@ void i2c_read(void)
 		error("i2c read() => TW_STATUS FAILED");
 		return;
 	}
-	print_hex_value(TWDR); // Print Data
+//	print_hex_value(TWDR); // Print Data
 }
 
 void uart_init(void)
@@ -117,8 +118,25 @@ char uart_rx(void)
 	return (UDR0); // Return Usart Data Register
 }
 
+void convert(uint8_t data[5])
+{
+	uint32_t rh = ((uint32_t)data[0]<<12) | ((uint32_t)data[1]<<4) | ((uint32_t)data[2]>>4);
+	uint32_t t = ((uint32_t)CLR_BITS(data[2], 0b11110000)<<16) | ((uint32_t)data[3]<<8) | (data[2]);
+	uint8_t strrh[100];
+	uint8_t strt[100];
+	dtostrf((float)(rh / 1048576.0) * 100.0, 0, 3, strrh);
+	dtostrf((float)(t / 1048576.0) * 200.0 - 50, 0, 2, strt);
+
+	uart_printstr("Temperature: ");
+	uart_printstr(strt);
+	uart_printstr("°C, Humidity: ");
+	uart_printstr(strrh);
+	uart_printstr("%\n\r");
+}
+
 int main(void)
 {
+	uint8_t data[5];
 	uart_init();
 	i2c_init();
 	_delay_ms(100);
@@ -149,14 +167,15 @@ int main(void)
 		while (CHK_BITS(TWDR, (1<<7)))
 			_delay_ms(80);
 		ack = 1;
-		for (uint8_t i = 0; i < 6; ++i)
+		i2c_read();
+		for (uint8_t i = 0; i < 5; ++i)
 		{
 			i2c_read();
-			uart_tx(' ');
+			data[i] = TWDR;
 		}
+		convert(data);
 		ack = 0;
 		i2c_read();
-		uart_printstr("\n\r");
 		i2c_stop();
 	}
 	return (0);
