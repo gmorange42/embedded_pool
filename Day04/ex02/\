@@ -118,34 +118,27 @@ char uart_rx(void)
 	return (UDR0); // Return Usart Data Register
 }
 
-uint32_t rh_tab[3] = {-1, -1, -1};
-uint32_t t_tab[3] = {-1, -1, -1};
-
-void convert(uint8_t data[5])
+void convert(uint8_t data[5], uint32_t* rh_tab[3], uint32_t* t_tab[3])
 {
 	uint32_t rh = ((uint32_t)data[0]<<12) | ((uint32_t)data[1]<<4) | ((uint32_t)data[2]>>4);
 	uint32_t t = ((uint32_t)CLR_BITS(data[2], 0b11110000)<<16) | ((uint32_t)data[3]<<8) | (data[2]);
-	if (rh_tab[2] == -1)
+	if (rh[2] == -1)
 	{
-		for (uint8_t i = 0; i < 3; ++i)
-		{
-			rh_tab[i] = rh;
-			t_tab[i] = t;
-		}
+		for (uint8_t i = 0; i < 2; ++i)
+			rh_tab = rh;
+			t_tab = t;
 	}
 	else
 	{
 		rh_tab[2] = rh;
 		t_tab[2] = t;
 	}
-	rh_tab[0] = rh_tab[1];
-	rh_tab[1] = rh_tab[2];
-	t_tab[0] = t_tab[1];
-	t_tab[1] = t_tab[2];
+	rh_tab[0] = th_tab[1];
+	rh_tab[1] = th_tab[2];
 	uint8_t strrh[100];
 	uint8_t strt[100];
-	dtostrf((float)((((uint32_t)rh_tab[0] + (uint32_t)rh_tab[1] + (uint32_t)rh_tab[2]) / 3) / 1048576.0) * 100.0, 0, 3, strrh);
-	dtostrf((float)((((uint32_t)t_tab[0] + (uint32_t)t_tab[1] + (uint32_t)t_tab[2]) / 3) / 1048576.0) * 200.0 - 50, 0, 2, strt);
+	dtostrf((float)(rh / 1048576.0) * 100.0, 0, 3, strrh);
+	dtostrf((float)(t / 1048576.0) * 200.0 - 50, 0, 2, strt);
 
 
 	uart_printstr("Temperature: ");
@@ -158,6 +151,8 @@ void convert(uint8_t data[5])
 int main(void)
 {
 	uint8_t data[5];
+	uint32_t humidity_tab[3] = {-1, -1, -1}
+	uint32_t temperature_tab[3] = {-1, -1, -1};
 	uart_init();
 	i2c_init();
 	_delay_ms(100);
