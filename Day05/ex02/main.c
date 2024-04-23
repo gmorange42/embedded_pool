@@ -88,33 +88,24 @@ bool safe_eeprom_read(void* buffer, size_t offset, size_t length)
 		return (false);
 	if (read_eeprom(offset - 1) != MAGIC_NUMBER || read_eeprom(offset - 2) != MAGIC_NUMBER)
 		return (false);
+	unsigned char* byteBuffer = buffer;
 	for (size_t i = 0; i < length; ++i)
 	{
-//		uart_tx(read_eeprom(offset + i));
-//		uart_tx(' ');
-		*((uint8_t *)buffer + i) = read_eeprom(offset + i);
+		*byteBuffer++ = read_eeprom(offset + i);
 	}
 	return (true);
 }
 
 bool safe_eeprom_write(void* buffer, size_t offset, size_t length)
 {
-	uart_printstr("Envie de crever ?");
 	if (offset < 0x02 || offset + length > 1023)
 		return (false);
-	uart_printstr("ROGER");
 	check_and_write(offset - 1, MAGIC_NUMBER);
 	check_and_write(offset - 2, MAGIC_NUMBER);
-	uart_printstr("BERNIE");
-	unsigned char* byteBuffer = (unsigned char*) buffer;
+	unsigned char* byteBuffer = buffer;
 	for (size_t i = offset; i < offset + length; ++i)
 	{
-		uart_printstr("TEST ");
-		uart_tx(byteBuffer[i]);
-		uart_tx(*((uint8_t *)buffer + i));
-		uart_printstr("]");
-//		check_and_write(i, *((uint8_t *)buffer + i));
-		check_and_write(i, byteBuffer[i]);
+		check_and_write(i, *byteBuffer++);
 	}
 	return (true);
 }
@@ -131,11 +122,8 @@ int main(void)
 		SET_BITS(PORTB, (1<<PB1));
 	while (1)
 	{
-		if (safe_eeprom_write(lechat, 0x04, 4))
-			SET_BITS(PORTB, (1<<PB0));
-		safe_eeprom_read(test, 0x04, 4);
+		uart_printstr(test);
 		uart_printstr("\n\r");
-
 		_delay_ms(500);
 	}
 	return (0);
