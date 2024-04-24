@@ -1,7 +1,6 @@
 #include <avr/io.h>
 #include <stdbool.h>
 #include <avr/eeprom.h>
-#include <util/delay.h>
 
 #define SET_BITS(reg, mask) (reg |= mask);
 #define CLR_BITS(reg, mask) (reg &= ~mask);
@@ -124,7 +123,6 @@ int main(void)
 	{
 		uart_printstr(test);
 		uart_printstr("\n\r");
-		_delay_ms(500);
 	}
 	return (0);
 }
