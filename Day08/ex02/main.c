@@ -60,7 +60,7 @@ void cycle(uint32_t D6, uint32_t D7, uint32_t D8)
 	set_color((D7>>24), (D7>>16), (D7>>8), D7);
 	set_color((D8>>24), (D8>>16), (D8>>8), D8);
 	end_frame();
-	_delay_ms(1000);
+	_delay_ms(250);
 }
 
 int main(void)
@@ -69,12 +69,9 @@ int main(void)
 	while (1)
 	{
 		cycle(0xFF0000FF, 0xE0000000, 0xE0000000);
-		cycle(0xFF00FF00, 0xE0000000, 0xE0000000);
-		cycle(0xFFFF0000, 0xE0000000, 0xE0000000);
-		cycle(0xFF00FFFF, 0xE0000000, 0xE0000000);
-		cycle(0xFFFFFF00, 0xE0000000, 0xE0000000);
-		cycle(0xFFFF00FF, 0xE0000000, 0xE0000000);
-		cycle(0xFFFFFFFF, 0xE0000000, 0xE0000000);
+		cycle(0xE0000000, 0xFF0FF000, 0xE0000000);
+		cycle(0xE0000000, 0xE0000000, 0xFFFF0000);
+		cycle(0xE0000000, 0xE0000000, 0xE0000000);
 	}
 	return (0);
 }

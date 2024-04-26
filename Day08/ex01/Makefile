@@ -34,7 +34,7 @@ flash: hex
 	avrdude -c arduino -p M328P -P $(PORT) -b $(UART_BAUDRATE) -U flash:w:$(HEX)
 
 clean:
-	rm -rf $(OBJ_PATH)
+	rm -rf $(OBJ_PATH) *.hex *.bin
 
 re: clean all
 
