@@ -2,7 +2,7 @@ CC = avr-gcc
 OBJCOPY = avr-objcopy
 SRC_PATH = 
 OBJ_PATH = obj/
-SRC_NAME = main.c rgb.c
+SRC_NAME = main.c
 F_CPU = 16000000UL
 UART_BAUDRATE = 115200
 CFLAGS = -Werror -Wextra -Wall -DF_CPU=$(F_CPU) -mmcu=atmega328p -Os -DUART_BAUDRATE=$(UART_BAUDRATE)

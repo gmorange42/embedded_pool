@@ -1,37 +1,41 @@
-NAME=main.hex
-MCU=atmega328p
-F_CPU=16000000
-UART_BAUDRATE=115200
-SRC=main.c
-CC=avr-gcc
-OBJCOPY=avr-objcopy
-OBJS=$(SRC:.c=.bin)
-CFLAGS=-std=c99 -O1 -g -mmcu=$(MCU) -DF_CPU=$(F_CPU) -DUART_BAUDRATE=$(UART_BAUDRATE) -I.
-PORT=/dev/ttyUSB0
+CC = avr-gcc
+OBJCOPY = avr-objcopy
+SRC_PATH = 
+OBJ_PATH = obj/
+SRC_NAME = main.c uart.c
+F_CPU = 16000000UL
+UART_BAUDRATE = 115200
+CFLAGS = -DF_CPU=$(F_CPU) -mmcu=atmega328p -Os -DUART_BAUDRATE=$(UART_BAUDRATE)
+BIN_NAME = chips.bin
+HEX_NAME = chips.hex
+OBJ_NAME = $(SRC_NAME:.c=.o)
+PORT = /dev/ttyUSB0
+INCLUDE = -Iincludes
+HEX = $(OBJ_PATH)$(HEX_NAME)
+BIN = $(OBJ_PATH)$(BIN_NAME)
+OBJ = $(addprefix $(OBJ_PATH), $(OBJ_NAME))
+SRC = $(addprefix $(SRC_PATH), $(SRC_NAME))
 
-FLASH := .flash
+all: hex flash
 
-all: $(FLASH)
-	
-$(NAME): $(OBJS)
-	$(OBJCOPY) -O ihex $^ $@
+hex: $(HEX)
 
-%.bin: %.c
-	$(CC) $(CFLAGS) -o $(OBJS) $(SRC)
+$(BIN): $(OBJ)
+	$(CC) $(INCLUDE) $^ -o $(BIN) $(CFLAGS)
 
-hex: $(NAME)
+$(HEX): $(BIN)
+	$(OBJCOPY) $(BIN) -O ihex $@
 
-$(FLASH): $(NAME)
-	avrdude -p $(MCU) -c arduino -U flash:w:$(OBJS) -P $(PORT)
-	@touch $@
+$(OBJ_PATH)%.o: $(SRC_PATH)%.c
+	mkdir -p $(OBJ_PATH)
+	$(CC) $(INCLUDE) $(CFLAGS) -o $@ -c $<
 
-screen:
-	gnome-terminal -- screen $(PORT) $(UART_BAUDRATE)
-
-squit:
-	screen -X quit &>/dev/null || true
+flash: hex
+	avrdude -c arduino -p M328P -P $(PORT) -b $(UART_BAUDRATE) -U flash:w:$(HEX)
 
 clean:
-	rm -f $(NAME) $(FLASH) *.bin
+	rm -rf $(OBJ_PATH)
 
-.PHONY: hex flash clean
+re: clean all
+
+.PHONY: all hex flash clean re
