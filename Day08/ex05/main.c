@@ -11,6 +11,8 @@
 #define MISO PB4
 #define SCK PB5
 
+volatile uint8_t leds[3][3] = {0};
+
 void adc_init(void)
 {
 	// ADC Enable
@@ -20,7 +22,7 @@ void adc_init(void)
 	SET_BITS(ADCSRA, (1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0));
 
 	// Set AVcc with external capacitor at AREF pin and Left Adjust Result
-	SET_BITS(ADMUX, (1<<REFS0) | (1<<ADLAR);
+	SET_BITS(ADMUX, (1<<REFS0) | (1<<ADLAR));
 }
 
 void SPI_MasterInit(void)
@@ -49,7 +51,7 @@ void start_frame(void)
 		SPI_MasterTransmit(0);
 }
 
-void set_color(uint8_t brightness, uint8_t blue, uint8_t green, uint8_t red)
+void set_color(uint8_t brightness, uint8_t red, uint8_t green, uint8_t blue)
 {
 	SPI_MasterTransmit(brightness); // Max Brightness (0xE0 to 0xFF) |111|Brightness value|
 	SPI_MasterTransmit(blue); // BLUE
@@ -65,44 +67,50 @@ void end_frame(void)
 
 }
 
-void cycle(uint32_t D6, uint32_t D7, uint32_t D8)
+void set_led(uint8_t nled, uint8_t color)
 {
-	start_frame();
-	set_color((D6>>24), (D6>>16), (D6>>8), D6);
-	set_color((D7>>24), (D7>>16), (D7>>8), D7);
-	set_color((D8>>24), (D8>>16), (D8>>8), D8);
-	end_frame();
-	_delay_ms(250);
-}
+	//ADB Start Conversion
+	SET_BITS(ADCSRA, (1<<ADSC));
 
-void manage_leds(uint16_t val)
-{
-	uint16_t third = 341;
-
+	// While conversion in progress
+	while (CHK_BITS(ADCSRA, (1<<ADSC)))
+	{}
+	leds[nled][color] = ADCH; 
 	start_frame();
-	for (uint8_t i = 1; i < 4; ++i)
-	{
-		if (val >= (third * i))
-			set_color(0xE1, 0, 0, 0xFF);
-		else
-			set_color(0xE0, 0, 0, 0);
-	}
+	set_color(0xE1, leds[0][0], leds[0][1], leds[0][2]);
+	set_color(0xE1, leds[1][0], leds[1][1], leds[1][2]);
+	set_color(0xE1, leds[2][0], leds[2][1], leds[2][2]);
 	end_frame();
 }
 
 int main(void)
 {
+	CLR_BITS(DDRD , (1<<PD2) | (1<<PD4));
 	adc_init();
 	SPI_MasterInit();
+	uint8_t color = 0;
+	uint8_t nled= 0;
 	while (1)
 	{
-		//ADB Start Conversion
-		SET_BITS(ADCSRA, (1<<ADSC));
-	
-		// While conversion in progress
-		while (CHK_BITS(ADCSRA, (1<<ADSC)))
-		{}
-		manage_leds(ADC);
+		if (!(CHK_BITS(PIND, (1<<PD2))))
+		{
+			++color;
+			color %= 3;
+			_delay_ms(50);
+			set_led(nled, color);
+			while (!(CHK_BITS(PIND, (1<<PD2))))
+			{}
+			_delay_ms(50);
+		}
+		else if (!(CHK_BITS(PIND, (1<<PD4))))
+		{
+			++nled;
+			nled %= 3;
+			_delay_ms(50);
+			while (!(CHK_BITS(PIND, (1<<PD4))))
+			{}
+			_delay_ms(50);
+		}
 	}
 	return (0);
 }
