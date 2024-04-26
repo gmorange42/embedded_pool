@@ -11,6 +11,18 @@
 #define MISO PB4
 #define SCK PB5
 
+void adc_init(void)
+{
+	// ADC Enable
+	SET_BITS(ADCSRA, (1<<ADEN));
+
+	// ADC Presclaler to 128
+	SET_BITS(ADCSRA, (1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0));
+
+	// Set AVcc with external capacitor at AREF pin
+	SET_BITS(ADMUX, (1<<REFS0));
+}
+
 void SPI_MasterInit(void)
 {
 	/* Set MOSI and SCK output, all others input */
@@ -63,15 +75,34 @@ void cycle(uint32_t D6, uint32_t D7, uint32_t D8)
 	_delay_ms(250);
 }
 
+void manage_leds(uint16_t val)
+{
+	uint16_t third = 341;
+
+	start_frame();
+	for (uint8_t i = 1; i < 4; ++i)
+	{
+		if (val >= (third * i))
+			set_color(0xE1, 0, 0, 0xFF);
+		else
+			set_color(0xE0, 0, 0, 0);
+	}
+	end_frame();
+}
+
 int main(void)
 {
+	adc_init();
 	SPI_MasterInit();
 	while (1)
 	{
-		cycle(0xE10000FF, 0xE0000000, 0xE0000000);
-		cycle(0xE0000000, 0xE10FF000, 0xE0000000);
-		cycle(0xE0000000, 0xE0000000, 0xE1FF0000);
-		cycle(0xE0000000, 0xE0000000, 0xE0000000);
+		//ADB Start Conversion
+		SET_BITS(ADCSRA, (1<<ADSC));
+	
+		// While conversion in progress
+		while (CHK_BITS(ADCSRA, (1<<ADSC)))
+		{}
+		manage_leds(ADC);
 	}
 	return (0);
 }
