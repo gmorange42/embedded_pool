@@ -12,6 +12,9 @@
 #define MISO PB4
 #define SCK PB5
 
+volatile uint8_t rainbow_color = 0;
+volatile uint8_t in_wheel = 0;
+
 void SPI_MasterInit(void)
 {
 	/* Set MOSI and SCK output, all others input */
@@ -51,17 +54,6 @@ void end_frame(void)
 	// End Frame |11111111|11111111|11111111|11111111|
 	for (uint8_t i = 0; i < 4; ++i)
 		SPI_MasterTransmit(0xFF);
-
-}
-
-void cycle(uint32_t D6, uint32_t D7, uint32_t D8)
-{
-	start_frame();
-	set_color((D6>>24), (D6>>16), (D6>>8), D6);
-	set_color((D7>>24), (D7>>16), (D7>>8), D7);
-	set_color((D8>>24), (D8>>16), (D8>>8), D8);
-	end_frame();
-	_delay_ms(250);
 }
 
 void manage_one_led(uint32_t colors, uint8_t led)
@@ -71,10 +63,9 @@ void manage_one_led(uint32_t colors, uint8_t led)
 	for (uint8_t i = 6; i < 9; ++i)
 	{
 		if (i == led)
-			set_color(0xFF, (colors>>16), (colors>>8), colors);
+			set_color(0xE1, (colors>>16), (colors>>8), colors);
 		else
 			set_color(0xE0,0,0,0);
-
 	}
 	end_frame();
 }
@@ -115,19 +106,19 @@ void check_one_led_cmd(uint8_t data[7])
 void wheel(uint8_t pos) {
 	pos = 255 - pos;
 	if (pos < 85) {
-		set_color(0xFF, 255 - pos * 3, 0, pos * 3);
-		set_color(0xFF, 0, pos * 3, 255 - pos * 3);
-		set_color(0xFF, pos * 3, 255 - pos * 3, 0);
+		set_color(0xE1, 255 - pos * 3, 0, pos * 3);
+		set_color(0xE1, 0, pos * 3, 255 - pos * 3);
+		set_color(0xE1, pos * 3, 255 - pos * 3, 0);
 	} else if (pos < 170) {
 		pos = pos - 85;
-		set_color(0xFF, 0, pos * 3, 255 - pos * 3);
-		set_color(0xFF, pos * 3, 255 - pos * 3, 0);
-		set_color(0xFF, 255 - pos * 3, 0, pos * 3);
+		set_color(0xE1, 0, pos * 3, 255 - pos * 3);
+		set_color(0xE1, pos * 3, 255 - pos * 3, 0);
+		set_color(0xE1, 255 - pos * 3, 0, pos * 3);
 	} else {
 		pos = pos - 170;
-		set_color(0xFF, pos * 3, 255 - pos * 3, 0);
-		set_color(0xFF, 255 - pos * 3, 0, pos * 3);
-		set_color(0xFF, 0, pos * 3, 255 - pos * 3);
+		set_color(0xE1, pos * 3, 255 - pos * 3, 0);
+		set_color(0xE1, 255 - pos * 3, 0, pos * 3);
+		set_color(0xE1, 0, pos * 3, 255 - pos * 3);
 	}
 }
 
@@ -143,9 +134,6 @@ uint8_t rainbow(uint8_t data[13])
 		}
 	return (1);
 }
-
-volatile uint8_t rainbow_color = 0;
-volatile uint8_t in_wheel = 0;
 
 char modif_uart_rx(void)
 {	

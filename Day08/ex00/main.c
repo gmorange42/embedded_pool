@@ -60,7 +60,7 @@ int main(void)
 	start_frame();
 
 	// Led Frame 32 bits (D6)
-	set_color(0xFF, 0, 0, 0xFF);
+	set_color(0xE1, 0, 0, 0xFF);
 				 
 	// Led Frame 32 bits (D7)
 	set_color(0xE0, 0, 0, 0);

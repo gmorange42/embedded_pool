@@ -20,7 +20,7 @@ void adc_init(void)
 	SET_BITS(ADCSRA, (1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0));
 
 	// Set AVcc with external capacitor at AREF pin and Left Adjust Result
-	SET_BITS(ADMUX, (1<<REFS0) | (1<<ADLAR);
+	SET_BITS(ADMUX, (1<<REFS0));
 }
 
 void SPI_MasterInit(void)
@@ -63,16 +63,6 @@ void end_frame(void)
 	for (uint8_t i = 0; i < 4; ++i)
 		SPI_MasterTransmit(0xFF);
 
-}
-
-void cycle(uint32_t D6, uint32_t D7, uint32_t D8)
-{
-	start_frame();
-	set_color((D6>>24), (D6>>16), (D6>>8), D6);
-	set_color((D7>>24), (D7>>16), (D7>>8), D7);
-	set_color((D8>>24), (D8>>16), (D8>>8), D8);
-	end_frame();
-	_delay_ms(250);
 }
 
 void manage_leds(uint16_t val)
