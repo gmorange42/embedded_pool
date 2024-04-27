@@ -10,8 +10,6 @@
 
 int main(void)
 {
-	uart_init();
-
 	uint8_t counter = 0;
 
 	// Set pins for LEDs and btn SW3
