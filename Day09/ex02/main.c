@@ -18,9 +18,9 @@ void init_seven_segments(void)
 	i2c_stop();
 }
 
-void print_digit(uint8_t digit, uint8_t place)
+void print_digit(uint8_t digit, uint8_t place, uint8_t dot)
 {
-	uint8_t leds[10];
+	uint8_t leds[11];
 	leds[0] = 0b00111111;
 	leds[1] = 0b00000110;
 	leds[2] = 0b01011011;
@@ -31,11 +31,12 @@ void print_digit(uint8_t digit, uint8_t place)
 	leds[7] = 0b00000111;
 	leds[8] = 0b01111111;
 	leds[9] = 0b01101111;
+	leds[10] = 0b00000000;
 
 	i2c_start(0b00100000, 0);  // send address in write mode
 	i2c_write(2); //Send command Output port 0 first
 	i2c_write(~(1<<(8 - place))); // Bits of register 0 LOW
-	i2c_write((leds[digit])); // Bits of register 1 equal to leds variable 
+	i2c_write((dot ? leds[digit]|=(1<<7) : leds[digit])); // Bits of register 1 equal to leds variable 
 	i2c_stop();
 }
 
@@ -43,7 +44,7 @@ int main(void)
 {
 	init_seven_segments();
 
-	print_digit(2, 1);
+	print_digit(2, 1, 0);
 
 	while (1)
 	{
