@@ -8,17 +8,16 @@
 #define SWI_BITS(reg, mask) (reg ^= mask);
 #define CHK_BITS(reg, mask) ((reg & mask) == mask)
 
-void init_timer1(void)
+void adc_init(void)
 {
-	// set OC1A to one second
-	OCR1A = (F_CPU / 1024);
+	// ADC Enable
+	SET_BITS(ADCSRA, (1<<ADEN));
 
-	// mode 15 (top = OCR1A)
-	SET_BITS(TCCR1A, (1<<WGM10) | (1<<WGM11));
-	SET_BITS(TCCR1B, (1<<WGM12) | (1<<WGM13));
+	// ADC Presclaler to 128
+	SET_BITS(ADCSRA, (1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0));
 
-	// Set prescaler to 1024
-	SET_BITS(TCCR1B, (1<<CS12) | (1<<CS10));
+	// Set AVcc with external capacitor at AREF pin
+	SET_BITS(ADMUX, (1<<REFS0));
 }
 
 void init_seven_segments(void)
@@ -71,18 +70,16 @@ void print_number(uint32_t number)
 int main(void)
 {
 	init_seven_segments();
-	init_timer1();
-
-	uint32_t counter = 0;
-
+	adc_init();
 	while (1)
 	{
-		while (!(CHK_BITS(TIFR1, (1<<OCF1A))))
-		{
-			print_number(counter);
-		}
-		counter = (++counter) % 10000;
-		SET_BITS(TIFR1, (1<<OCF1A));
+		//ADB Start Conversion
+		SET_BITS(ADCSRA, (1<<ADSC));
+
+		// While conversion in progress
+		while (CHK_BITS(ADCSRA, (1<<ADSC)))
+		{}
+		print_number(ADC);
 	}
 	return (0);
 }
