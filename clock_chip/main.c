@@ -40,17 +40,27 @@ void print_digit(uint8_t digit, uint8_t place, uint8_t dot)
 	i2c_stop();
 }
 
+void print_number(uint32_t number)
+{
+	print_digit(number / 1000, 4, 0);
+	print_digit(10, 4, 0);
+
+	print_digit(number / 100 % 10, 3, 0);
+	print_digit(10, 3, 0);
+
+	print_digit(number / 10 % 10, 2, 0);
+	print_digit(10, 2, 0);
+
+	print_digit(number % 10, 1, 0);
+	print_digit(10, 1, 0);
+}
+
 int main(void)
 {
 	init_seven_segments();
-
-	uint8_t n = 0;
-
 	while (1)
 	{
-		n %= 10;
-		print_digit(n++, 1, 0);
-		_delay_ms(1000);
+
 	}
 	return (0);
 }
