@@ -22,7 +22,8 @@ void i2c_init(void)
 	TWBR = ((F_CPU / 100000) - 16) / 2; // Set the Value of the TWI Bit Rate Register
 }
 
-void i2c_start(uint8_t addr, uint8_t wr)
+//void i2c_start(uint8_t addr, uint8_t wr)
+void i2c_start(uint8_t addr)
 {
 	//WR -> [Read = 1] [Write = 0]
 	TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN); // Send START condition
@@ -34,12 +35,14 @@ void i2c_start(uint8_t addr, uint8_t wr)
 		error("i2c start() => TW_STATUS FAILED (TW_START)");
 		return;
 	}
-	TWDR = (addr<<1) | wr; // Load Device Adrress into TWDR Register and Read/Write bit.
+//	TWDR = (addr<<1) | wr; // Load Device Adrress into TWDR Register and Read/Write bit.
+	TWDR = addr; // Load Device Adrress into TWDR Register and Read/Write bit.
 	TWCR = (1<<TWINT) | (1<<TWEN); // Clear TWINT bit in TWCR to start transmission of address
 	while (!(TWCR & (1<<TWINT))) {} // Wait for Flag set. This indicates that the SLA_W / SLA_R has
 					// been transmitted, and ACK/NACK has been received.
 	if (TW_STATUS != TW_MT_SLA_ACK && 
-			TW_STATUS != TW_MR_SLA_ACK) // Check value of TWI Status Register.
+			TW_STATUS != TW_MR_SLA_ACK &&
+			TW_STATUS != TW_MR_SLA_NACK) // Check value of TWI Status Register.
 						    // Mask prescaler bits.If status different
 						    // from MT_SLA_ACK or MR_SLA_ACK go to ERROR.
 	{

@@ -33,7 +33,7 @@ int main(void)
 	{
 //		uart_printhex(decimal_to_bcd(99));
 //		uart_printstr("\r\n");
-		ret = bcd_to_decimal(99);
+		ret = bcd_to_decimal(40);
 		uart_tx((ret/10)+'0');
 		uart_tx((ret%10)+'0');
 		uart_printstr("\r\n");
